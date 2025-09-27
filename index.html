@@ -1,1 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Serveur RP Laval - En Construction</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    body {
+      height: 100vh;
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      text-shadow: 0 0 20px #ff0000, 0 0 40px #0066ff;
+      animation: float 4s ease-in-out infinite, shake 0.2s infinite, glitch 2s infinite;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      position: relative;
+    }
+
+    h1::before, h1::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      right: 0;
+      color: #ff0000;
+      overflow: hidden;
+      clip: rect(0, 900px, 0, 0);
+    }
+
+    h1::before {
+      animation: glitchTop 2s infinite linear alternate-reverse;
+    }
+    h1::after {
+      color: #0066ff;
+      animation: glitchBottom 2s infinite linear alternate-reverse;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-top: 15px;
+      color: #aaa;
+      animation: pulse 3s infinite alternate;
+    }
+
+    .dev {
+      font-size: 1.2rem;
+      color: #ff4444;
+      margin-top: 30px;
+      text-shadow: 0 0 15px #ff0000, 0 0 15px #0066ff;
+      animation: pulse 2s infinite alternate;
+    }
+
+    /* Animations texte */
+    @keyframes float {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(12px, -12px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(1px, -1px); }
+      50% { transform: translate(-1px, 1px); }
+      75% { transform: translate(1px, 1px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.6; }
+      to { opacity: 1; }
+    }
+
+    @keyframes glitchTop {
+      0% { clip: rect(0, 900px, 0, 0); }
+      20% { clip: rect(0, 900px, 30px, 0); }
+      40% { clip: rect(0, 900px, 15px, 0); }
+      60% { clip: rect(0, 900px, 5px, 0); }
+      80% { clip: rect(0, 900px, 25px, 0); }
+      100% { clip: rect(0, 900px, 0, 0); }
+    }
+    @keyframes glitchBottom {
+      0% { clip: rect(0, 900px, 0, 0); }
+      20% { clip: rect(40px, 900px, 80px, 0); }
+      40% { clip: rect(20px, 900px, 60px, 0); }
+      60% { clip: rect(10px, 900px, 50px, 0); }
+      80% { clip: rect(30px, 900px, 70px, 0); }
+      100% { clip: rect(0, 900px, 0, 0); }
+    }
+
+    /* Bouton d'info */
+    .info-btn {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(45deg, #ff0000, #6600ff);
+      color: #fff;
+      font-size: 2rem;
+      cursor: pointer;
+      box-shadow: 0 0 20px #ff0000, 0 0 20px #6600ff;
+      animation: pulse 2s infinite;
+      transition: transform 0.2s;
+    }
+    .info-btn:hover { transform: scale(1.1); }
+
+    /* Popup */
+    .popup {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .popup.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .popup-content {
+      background: #111;
+      border: 2px solid #ff0000;
+      border-radius: 15px;
+      padding: 30px;
+      width: 400px;
+      max-width: 90%;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 0 30px #ff0000, 0 0 30px #0066ff;
+      animation: zoomIn 0.4s ease;
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .popup-content h3 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      color: #ff3333;
+      text-shadow: 0 0 10px #ff0000, 0 0 10px #0066ff;
+    }
+    .popup-content p {
+      font-size: 1rem;
+      color: #ddd;
+      line-height: 1.5;
+    }
+    .close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 2rem;
+      color: #fff;
+      cursor: pointer;
+      text-shadow: 0 0 10px #ff0000;
+    }
+    .close:hover { color: #ff4444; }
+
+    /* Fond animé */
+    canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+
+    /* Halo suivant la souris */
+    .halo {
+      position: fixed;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,0,0,0.3), transparent 70%);
+      pointer-events: none;
+      mix-blend-mode: screen;
+      z-index: 0;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+  <h1 data-text="🚨 Serveur RP Laval 🚨">🚨 Serveur RP Laval 🚨</h1>
+  <h2>Site en construction...</h2>
+  <p class="dev">Développé par <strong>TOI (le Dev)</strong></p>
+
+  <!-- Bouton Info -->
+  <button class="info-btn">?</button>
+
+  <!-- Popup -->
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <span class="close" id="close">&times;</span>
+      <h3>À propos du site</h3>
+      <p>
+        Ce site est la <strong>page officielle du Serveur RP Laval sur ER:LC</strong>.<br><br>
+        Il servira à afficher le <strong>status du serveur</strong>, les <strong>informations d’événements</strong>, 
+        et à fournir des <strong>annonces importantes</strong> pour la communauté.
+      </p>
+    </div>
+  </div>
+
+  <canvas id="bg"></canvas>
+  <div class="halo" id="halo"></div>
+
+  <script>
+    // Fond animé
+    const canvas = document.getElementById("bg");
+    const ctx = canvas.getContext("2d");
+    let w, h;
+    let particles = [];
+    let sparks = [];
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.size = Math.random() * 3 + 1;
+        this.speedX = (Math.random() - 0.5) * 1.5;
+        this.speedY = (Math.random() - 0.5) * 1.5;
+        this.color = Math.random() > 0.5 ? "rgba(255,0,0," : "rgba(0,102,255,";
+        this.life = Math.random() * 200 + 100;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life--;
+        if (this.x < 0 || this.x > w) this.speedX *= -1;
+        if (this.y < 0 || this.y > h) this.speedY *= -1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color + (this.life / 200) + ")";
+        ctx.fill();
+      }
+    }
+
+    class Spark {
+      constructor() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.size = Math.random() * 2 + 1;
+        this.life = 30 + Math.random() * 30;
+      }
+      update() {
+        this.life--;
+        this.y -= 0.5;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+        ctx.fillStyle = "rgba(255, 255, 0,"+(this.life/60)+")";
+        ctx.fill();
+      }
+    }
+
+    function connectParticles() {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+          let dx = particles[a].x - particles[b].x;
+          let dy = particles[a].y - particles[b].y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(255,0,0,0.2)";
+            if (Math.random() > 0.5) ctx.strokeStyle = "rgba(0,102,255,0.2)";
+            ctx.lineWidth = 1;
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, w, h);
+
+      if (particles.length < 120) {
+        particles.push(new Particle());
+      }
+      particles.forEach((p, i) => {
+        p.update();
+        p.draw();
+        if (p.life <= 0) particles.splice(i, 1);
+      });
+
+      if (Math.random() < 0.05) {
+        sparks.push(new Spark());
+      }
+      sparks.forEach((s, i) => {
+        s.update();
+        s.draw();
+        if (s.life <= 0) sparks.splice(i, 1);
+      });
+
+      connectParticles();
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    // Popup
+    const infoBtn = document.querySelector(".info-btn");
+    const popup = document.getElementById("popup");
+    const closeBtn = document.getElementById("close");
+
+    infoBtn.addEventListener("click", () => {
+      popup.classList.add("active");
+    });
+
+    closeBtn.addEventListener("click", () => {
+      popup.classList.remove("active");
+    });
+
+    window.addEventListener("click", (e) => {
+      if (e.target === popup) popup.classList.remove("active");
+    });
+
+    // Halo souris
+    const halo = document.getElementById("halo");
+    document.addEventListener("mousemove", (e) => {
+      halo.style.left = e.pageX + "px";
+      halo.style.top = e.pageY + "px";
+    });
+  </script>
+</body>
+</html>
